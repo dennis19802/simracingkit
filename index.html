@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SimRacingKit – Vehicle Physics for Unity | DRDreamStudio</title>
+<meta name="description" content="SimRacingKit by DRDreamStudio: realistic, modular vehicle physics for Unity 6 (URP) – Pacejka tires, full drivetrain, driving assists and steering wheel force feedback.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='38' fill='none' stroke='%23f0f2f5' stroke-width='9'/%3E%3Cpath d='M44 12.5 A38 38 0 0 1 56 12.5' stroke='%23e63946' stroke-width='9' fill='none'/%3E%3Ccircle cx='50' cy='50' r='10' fill='%23e63946'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0e1117; --bg2:#1c222e; --card:#171c26; --line:#262d3b;
+    --text:#f0f2f5; --muted:#a3acba; --red:#e63946; --red2:#ff5a66;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
+  a{color:var(--red2);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  header.top{position:sticky;top:0;z-index:10;background:rgba(14,17,23,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--text)}
+  .brand svg{width:28px;height:28px}
+  nav a{color:var(--muted);margin-left:22px;font-size:.95rem} nav a:hover{color:var(--text);text-decoration:none}
+
+  .hero{background:linear-gradient(180deg,var(--bg2),var(--bg));padding:90px 0 80px;overflow:hidden;position:relative}
+  .hero .wrap{display:grid;grid-template-columns:1fr 1.2fr;gap:50px;align-items:center}
+  .hero .emblem svg{width:100%;max-width:380px;filter:drop-shadow(0 0 40px rgba(230,57,70,.25))}
+  h1{font-size:clamp(2.4rem,5vw,3.8rem);line-height:1.05;margin:0 0 10px;letter-spacing:-.02em}
+  h1 .kit{color:var(--red)}
+  .edition{font-weight:600;letter-spacing:.12em;font-size:.95rem;color:var(--text)}
+  .bar{width:90px;height:4px;background:var(--red);margin:16px 0 22px;border-radius:2px}
+  .lead{color:var(--muted);font-size:1.15rem;max-width:520px;margin:0 0 30px}
+  .btns{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:12px 22px;border-radius:8px;font-weight:600;border:1px solid var(--line);color:var(--text);background:var(--card)}
+  .btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+  .btn:hover{text-decoration:none;filter:brightness(1.1)}
+  .speed{position:absolute;inset:0;pointer-events:none;opacity:.08;
+         background:repeating-linear-gradient(180deg,transparent 0 46px,#fff 46px 48px);mask-image:linear-gradient(90deg,transparent,#000 40%,transparent)}
+
+  section{padding:80px 0;border-top:1px solid var(--line)}
+  h2{font-size:2rem;margin:0 0 10px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 40px;max-width:680px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
+  .card h3{margin:0 0 8px;font-size:1.1rem}
+  .card p{margin:0;color:var(--muted);font-size:.95rem}
+  .card .ico{width:34px;height:34px;border-radius:8px;background:rgba(230,57,70,.15);color:var(--red);display:grid;place-items:center;font-weight:700;margin-bottom:12px}
+
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .compare ul{margin:0;padding-left:20px;color:var(--muted)} .compare li{margin:6px 0}
+  .tag{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.08em;padding:3px 9px;border-radius:20px;margin-bottom:10px}
+  .tag.free{background:rgba(46,204,113,.15);color:#3ddc84} .tag.soon{background:rgba(230,57,70,.15);color:var(--red2)}
+
+  .contact{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  footer{border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-size:.9rem}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .legal{font-size:.95rem;color:var(--muted)} .legal h3{color:var(--text)}
+
+  @media (max-width:820px){
+    .hero .wrap,.compare,.contact{grid-template-columns:1fr}
+    .grid{grid-template-columns:1fr 1fr}
+    .hero .emblem{text-align:center} .hero .emblem svg{max-width:220px}
+    nav a{margin-left:14px}
+  }
+  @media (max-width:520px){ .grid{grid-template-columns:1fr} nav{display:none} }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="wheel" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f2f5" stroke-width="8.5"/>
+      <path d="M42.2 10.8 A40 40 0 0 1 57.8 10.8" fill="none" stroke="#e63946" stroke-width="8.5"/>
+      <rect x="10" y="46.3" width="80" height="7.4" fill="#f0f2f5"/>
+      <rect x="46.3" y="50" width="7.4" height="40" fill="#f0f2f5"/>
+      <circle cx="50" cy="50" r="10.5" fill="#f0f2f5"/>
+      <circle cx="50" cy="50" r="5.8" fill="#e63946"/>
+      <circle cx="50" cy="50" r="2.6" fill="#0e1117"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><svg><use href="#wheel"/></svg>DRDreamStudio</a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#editions">Editions</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="speed"></div>
+  <div class="wrap">
+    <div class="emblem"><svg viewBox="0 0 100 100"><use href="#wheel"/></svg></div>
+    <div>
+      <h1>SimRacing<span class="kit">Kit</span></h1>
+      <div class="edition">VEHICLE PHYSICS FOR UNITY</div>
+      <div class="bar"></div>
+      <p class="lead">Realistic, modular vehicle physics for Unity 6 (URP). Pacejka tires, a complete drivetrain, driving assists and steering wheel force feedback – tune every physical value in the Inspector.</p>
+      <div class="btns">
+        <!-- Link eintragen, sobald das Paket im Asset Store live ist -->
+        <a class="btn primary" href="https://assetstore.unity.com/publishers/" id="storeLink">Unity Asset Store</a>
+        <!-- YouTube-Kanal-URL eintragen -->
+        <a class="btn" href="https://www.youtube.com/" id="videoLink">Watch videos</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <h2>Simulation-grade physics, modular by design</h2>
+    <p class="sub">Every vehicle is built from independent, preset-driven modules. Drive it as it is, or open the Inspector and tune tires, engine, drivetrain, suspension, brakes and aerodynamics.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">T</div><h3>Pacejka tires</h3><p>Magic Formula with combined slip, load sensitivity and camber thrust. Three-zone temperature, pressure and wear.</p></div>
+      <div class="card"><div class="ico">E</div><h3>Modular engine</h3><p>Torque curves, turbo and supercharger, ECU with rev limiter and launch control, fuel and thermal model, hybrid and electric drive.</p></div>
+      <div class="card"><div class="ico">D</div><h3>Full drivetrain</h3><p>Clutch with heat and wear, torque converter, manual, sequential, automatic, DCT and CVT gearboxes, open, LSD, Torsen and active differentials.</p></div>
+      <div class="card"><div class="ico">S</div><h3>Suspension &amp; brakes</h3><p>Bump stops, dynamic camber, anti-roll bars. Brakes with disc temperature, fade and pad compounds.</p></div>
+      <div class="card"><div class="ico">A</div><h3>Aero &amp; assists</h3><p>Downforce, DRS and ground effect. ABS, TCS, ESC, engine drag control, launch control and steering assist with assist levels.</p></div>
+      <div class="card"><div class="ico">W</div><h3>Wheel &amp; FFB</h3><p>Keyboard, gamepad and steering wheel via the Input System, force feedback for DirectInput wheels on Windows.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="editions">
+  <div class="wrap">
+    <h2>Editions</h2>
+    <p class="sub">Start with the free Community Edition and drive the included demo car on a sample track.</p>
+    <div class="compare">
+      <div class="card">
+        <span class="tag free">FREE</span>
+        <h3>Community Edition</h3>
+        <ul>
+          <li>Ready-to-drive sports car on a sample track</li>
+          <li>Cameras, HUDs, telemetry graphs and live tuning menu</li>
+          <li>1 vehicle per scene, up to 4 wheels</li>
+          <li>Desktop platforms (Windows, macOS, Linux)</li>
+          <li>Precompiled libraries, English PDF manual</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag soon">COMING SOON</span>
+        <h3>Full Version</h3>
+        <ul>
+          <li>Full source code</li>
+          <li>Car Builder for your own vehicles</li>
+          <li>Dynamic weather and day/night system</li>
+          <li>Track tools and racing line</li>
+          <li>No vehicle or wheel limits</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <h2>Contact &amp; support</h2>
+    <p class="sub">Questions, bug reports or feedback – get in touch.</p>
+    <div class="contact">
+      <div class="card">
+        <h3>Support</h3>
+        <p><a href="mailto:schillingerdennis424@gmail.com">schillingerdennis424@gmail.com</a></p>
+      </div>
+      <div class="card">
+        <h3>Requirements</h3>
+        <p>Unity 6000.3 (Unity 6.3 LTS) or newer, Universal Render Pipeline, Input System package.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="impressum" class="legal">
+  <div class="wrap">
+    <h2>Impressum</h2>
+    <p>Angaben gemäß § 5 DDG</p>
+    <p>
+      DRDreamStudio<br>
+      Dennis Schilling<br>
+      STRASSE_HAUSNUMMER_EINTRAGEN<br>
+      PLZ_ORT_EINTRAGEN<br>
+      Deutschland
+    </p>
+    <p>E-Mail: <a href="mailto:schillingerdennis424@gmail.com">schillingerdennis424@gmail.com</a></p>
+
+    <h3>Datenschutz</h3>
+    <p>Diese Website setzt keine Cookies, verwendet keine Analyse- oder Tracking-Dienste und lädt keine externen Schriften oder Skripte. Beim Aufruf verarbeitet der Hosting-Anbieter (GitHub Pages, GitHub Inc.) technisch notwendige Zugriffsdaten wie die IP-Adresse. Wenn Sie uns per E-Mail kontaktieren, verwenden wir Ihre Angaben nur zur Bearbeitung Ihrer Anfrage. Links zu YouTube und zum Unity Asset Store führen auf externe Seiten, für die deren eigene Datenschutzbestimmungen gelten.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 DRDreamStudio · Dennis Schilling</span>
+    <span>Unity is a trademark of Unity Technologies. This site is not affiliated with Unity Technologies.</span>
+  </div>
+</footer>
+
+</body>
+</html>
